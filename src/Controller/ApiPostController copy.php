@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Repository\PostRepository;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ApiPostController extends AbstractController
@@ -12,7 +11,7 @@ class ApiPostController extends AbstractController
     /**
      * @Route("/api/post", name="api_post_index", methods={"GET"})
      */
-    public function index(PostRepository $postRepository, NormalizerInterface $normalizer)
+    public function index(PostRepository $postRepository)
     {
         $posts = $postRepository->findAll();        
         dd($posts);
@@ -26,12 +25,12 @@ class ApiPostController extends AbstractController
         
         // Dans le cas d'objets complexes contenant des méthodes ou données privées
         // json_encode() ne pourra pas y accéder...
-        // sauf à faire appel au préalable au $normalizer
+        $json = json_encode($posts);
+        dd($json); // va retourner un tableau JSON vide !
+
+        // il faut donc avant d'utiliser json_encode() normaliser les données
         // normalisation = transformation de données complexes (objets) en un tableau associatif simple
-        // reste le problème des références circulaires auquel on peut remédier grâce aux annotations 'groups'
-        $postsNormalized = $normalizer->normalize($posts, null, ['groups' => 'posts:read']);
-        $json = json_encode($postsNormalized);
-        dd($json); // reste le problème des références circulaires !
+        // on appellera pour cette étape le NormalizerInterface
 
         return $this->render('api_post/index.html.twig', [
             'controller_name' => 'ApiPostController',
