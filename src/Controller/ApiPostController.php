@@ -5,9 +5,9 @@ namespace App\Controller;
 use App\Repository\PostRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
+// use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+// use Symfony\Component\HttpFoundation\JsonResponse;
+// use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class ApiPostController extends AbstractController
@@ -15,30 +15,19 @@ class ApiPostController extends AbstractController
     /**
      * @Route("/api/post", name="api_post_index", methods={"GET"})
      */
-    public function index(PostRepository $postRepository, SerializerInterface $serializer)
+    public function index(PostRepository $postRepository)
     {
         $posts = $postRepository->findAll(); 
 
         /*         
-        Au lieu d'avoir à utiliser le NormalizerInterface qui va transformer un objet en tableau associatif simple
-        Puis json_encode() pour transformer en JSON le tableau associatif
-        On fait appel au SerializerInterface 
-
-        $postsNormalized = $normalizer->normalize($posts, null, ['groups' => 'posts:read']);
-        $json = json_encode($postsNormalized); 
-        */
-
+        Au lieu d'utiliser le SerializerInterface (qui venait se substituer au NormalizerInterface) 
         $json = $serializer->serialize($posts, 'json', ['groups' => 'posts:read']);
-
-        /* 
-        Au lieu d'une réponse classique avec une entête particulière pour préciser le type de données
-        $response = new Response($json, 200, [
-            'Content-Type' => "application/json"
-        ]);
-
-        Je vais utiliser une réponse particulière */
-
+        et JsonResponse (qui venait se substituer à Response )
         $response = new JsonResponse($json, 200, [], true);
+        je vais utiliser une fonction héritée d'AbstractController
+         */
+
+        $response = $this->json($posts, 200, [], ['groups' => 'posts:read'] );    
 
         return $response;
     }
